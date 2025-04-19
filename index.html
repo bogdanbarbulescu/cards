@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repository Previews</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            color: #fff;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .repo-card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            border: 1px solid #333;
+        }
+        
+        .repo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 8px;
+            padding: 2px;
+            background: linear-gradient(45deg, #0077ff, #00ffaa, #ff00aa);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.7;
+            z-index: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .repo-card:hover::before {
+            opacity: 1;
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.5);
+        }
+        
+        .repo-card-content {
+            position: relative;
+            z-index: 1;
+            padding: 1.5rem;
+        }
+        
+        .repo-language {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.8rem;
+            margin-right: 1rem;
+        }
+        
+        .language-color {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .repo-stats {
+            display: flex;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .repo-stat {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+            color: #aaa;
+        }
+        
+        .repo-stat svg {
+            margin-right: 5px;
+        }
+        
+        .repo-name {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .repo-name:hover {
+            color: #0077ff;
+        }
+        
+        .repo-description {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 4.5rem;
+        }
+        
+        .repo-owner {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .owner-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .owner-name {
+            color: #ddd;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        
+        .owner-name:hover {
+            text-decoration: underline;
+            color: #0077ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Featured GitHub Repositories</h1>
+            <p class="text-muted">Explore these amazing open-source projects</p>
+        </div>
+        
+        <div class="row g-4" id="repo-container">
+            <!-- Repo cards will be added here -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample repository data
+        const repositories = [
+            {
+                name: "tensorflow/tensorflow",
+                description: "An end-to-end open source machine learning platform for everyone. Trusted by organizations like Intel, Airbnb, and Snapchat to build and deploy ML powered applications.",
+                owner: {
+                    login: "tensorflow",
+                    avatar_url: "https://api.placeholder.com/40/40"
+                },
+                html_url: "https://github.com/tensorflow/tensorflow",
+                stargazers_count: 175000,
+                forks_count: 88000,
+                language: "C++",
+                language_color: "#f34b7d"
+            },
+            {
+                name: "facebook/react",
+                description: "A declarative, efficient, and flexible JavaScript library for building user interfaces. Build encapsulated components that manage their own state, then compose them to make complex UIs.",
+                owner: {
+                    login: "facebook",
+                    avatar_url: "https://api.placeholder.com/40/40"
+                },
+                html_url: "https://github.com/facebook/react",
+                stargazers_count: 208000,
+                forks_count: 43000,
+                language: "JavaScript",
+                language_color: "#f1e05a"
+            },
+            {
+                name: "flutter/flutter",
+                description: "Flutter is Google's UI toolkit for building beautiful, natively compiled applications for mobile, web, desktop, and embedded devices from a single codebase.",
+                owner: {
+                    login: "flutter",
+                    avatar_url: "https://api.placeholder.com/40/40"
+                },
+                html_url: "https://github.com/flutter/flutter",
+                stargazers_count: 154000,
+                forks_count: 24000,
+                language: "Dart",
+                language_color: "#00B4AB"
+            }
+        ];
+
+        // Function to format numbers (e.g., 1000 -> 1k)
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'm';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'k';
+            }
+            return num;
+        }
+
+        // Function to create repository cards
+        function createRepoCards() {
+            const container = document.getElementById('repo-container');
+            
+            repositories.forEach(repo => {
+                const [ownerName, repoName] = repo.name.split('/');
+                
+                const cardCol = document.createElement('div');
+                cardCol.className = 'col-md-6 col-lg-4';
+                
+                cardCol.innerHTML = `
+                    <div class="repo-card">
+                        <div class="repo-card-content">
+                            <div class="repo-owner">
+                                <img src="/api/placeholder/40/40" alt="${ownerName}" class="owner-avatar">
+                                <a href="https://github.com/${ownerName}" class="owner-name">${ownerName}</a>
+                            </div>
+                            <a href="${repo.html_url}" class="repo-name" target="_blank">${repoName}</a>
+                            <p class="repo-description">${repo.description}</p>
+                            <div class="repo-language">
+                                <span class="language-color" style="background-color: ${repo.language_color}"></span>
+                                ${repo.language}
+                            </div>
+                            <div class="repo-stats">
+                                <div class="repo-stat">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
+                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                    </svg>
+                                    ${formatNumber(repo.stargazers_count)}
+                                </div>
+                                <div class="repo-stat">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-2-fill" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6h-1A1.5 1.5 0 0 1 6 4.5v-1zm6 0A1.5 1.5 0 0 1 13.5 2h1A1.5 1.5 0 0 1 16 3.5v1A1.5 1.5 0 0 1 14.5 6h-1A1.5 1.5 0 0 1 12 4.5v-1zm-6 6A1.5 1.5 0 0 1 7.5 8h1A1.5 1.5 0 0 1 10 9.5v1A1.5 1.5 0 0 1 8.5 12h-1A1.5 1.5 0 0 1 6 10.5v-1zm6 0A1.5 1.5 0 0 1 13.5 8h1A1.5 1.5 0 0 1 16 9.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm-6 6A1.5 1.5 0 0 1 7.5 14h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6 16.5v-1zm6 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1z"/>
+                                    </svg>
+                                    ${formatNumber(repo.forks_count)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(cardCol);
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            createRepoCards();
+        });
+    </script>
+</body>
+</html>
